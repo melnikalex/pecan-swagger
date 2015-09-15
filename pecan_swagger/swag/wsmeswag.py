@@ -16,7 +16,7 @@ def getmethodattr(method):
     __comments__ = [s.strip() for s in str(method.__doc__).splitlines()]
     attr = {}
     attr['description'] = "".join(__comments__[1:])
-    attr['produces'] = [method._pecan['content_type']]
+    attr['produces'] = [method._pecan['content_type'] if hasattr(method, '_pecan') else ['json']]
     attr['summary'] = __comments__[0]
     attr['responses'] = getresponses(method)
     attr['parameters'] = getparameters(method)
@@ -24,11 +24,12 @@ def getmethodattr(method):
 
 def getresponses(method):
     responses = {}
-    wmethod = method._wsme_definition
-    code = wmethod.status_code
+    if (hasattr(method, '_wsme_definition')):
+        wmethod = method._wsme_definition
+        code = wmethod.status_code
 
-    responses[code]={'description':'success',
-                     'schema':getschema(wmethod.return_type)}
+        responses[code]={'description':'success',
+                         'schema':getschema(wmethod.return_type)}
     return responses
 
 def getschema(return_type):
@@ -67,6 +68,8 @@ def getparameters(method):
     :return: dictionary of controller parameters in swagger format
     """
     parameters = []
+    if not hasattr(method, '_wsme_definition'):
+        return []
     for arg in method._wsme_definition.arguments:
         argspec = {}
         if type(arg.datatype) == type(wtypes.Base):

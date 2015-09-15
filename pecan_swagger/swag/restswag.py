@@ -77,8 +77,8 @@ def collect_methods(controllers):
         # pecan's _lookup function
         if getattr(controller[0], '_lookup', None):
             lookup = controller[0]._lookup
-            if hasattr(lookup, '__routes'):
-                routes = lookup.__routes
+            if getattr(lookup, '_routes', None):
+                routes = lookup._routes
                 newcontrollers = []
                 sep = '/' if controller[0][-1] != '/' else ''
                 currentpath = controller[0] + sep
